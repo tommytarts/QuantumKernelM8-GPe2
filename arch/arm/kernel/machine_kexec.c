@@ -14,11 +14,9 @@
 #include <asm/cacheflush.h>
 #include <asm/mach-types.h>
 #include <asm/system_misc.h>
-#ifdef CONFIG_KEXEC_HARDBOOT
 #include <linux/memblock.h>
 #include <linux/of_fdt.h>
 #include <asm/mmu_writeable.h>
-#endif
 
 extern const unsigned char relocate_new_kernel[];
 extern const unsigned int relocate_new_kernel_size;
@@ -59,8 +57,10 @@ int machine_kexec_prepare(struct kimage *image)
 		if (!err)
 			return - EINVAL;
 
+#ifdef CONFIG_KEXEC_HARDBOOT
 		if(current_segment->mem == image->start)
 			mem_text_write_kernel_word(&kexec_kernel_len, current_segment->memsz);
+#endif
 
 		err = get_user(header, (__be32*)current_segment->buf);
 		if (err)
@@ -69,7 +69,9 @@ int machine_kexec_prepare(struct kimage *image)
 		if (be32_to_cpu(header) == OF_DT_HEADER)
 		{
 			mem_text_write_kernel_word(&kexec_boot_atags, current_segment->mem);
+#ifdef CONFIG_KEXEC_HARDBOOT
 			mem_text_write_kernel_word(&kexec_boot_atags_len, current_segment->memsz);
+#endif
 		}
 	}
 #endif
@@ -161,19 +163,15 @@ void machine_kexec(struct kimage *image)
 	reboot_code_buffer = page_address(image->control_code_page);
 
 	/* Prepare parameters for reboot_code_buffer*/
-#ifdef CONFIG_KEXEC_HARDBOOT
 	mem_text_write_kernel_word(&kexec_start_address, image->start);
 	mem_text_write_kernel_word(&kexec_indirection_page, page_list);
 	mem_text_write_kernel_word(&kexec_mach_type, machine_arch_type);
 	if (!kexec_boot_atags)
 		mem_text_write_kernel_word(&kexec_boot_atags, image->start - KEXEC_ARM_ZIMAGE_OFFSET + KEXEC_ARM_ATAGS_OFFSET);
+#ifdef CONFIG_KEXEC_HARDBOOT	
 	mem_text_write_kernel_word(&kexec_hardboot, image->hardboot);
-#else
-	kexec_start_address = image->start;
-	kexec_indirection_page = page_list;
-	kexec_mach_type = machine_arch_type;
-	kexec_boot_atags = image->start - KEXEC_ARM_ZIMAGE_OFFSET + KEXEC_ARM_ATAGS_OFFSET;
 #endif
+
 	/* copy our kernel relocation code to the control code page */
 	memcpy(reboot_code_buffer,
 	       relocate_new_kernel, relocate_new_kernel_size);
