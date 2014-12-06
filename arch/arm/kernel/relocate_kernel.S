@@ -58,9 +58,9 @@ relocate_new_kernel:
 
 2:
 #ifdef CONFIG_KEXEC_HARDBOOT
-	ldr	r0, kexec_hardboot
-	teq	r0, #0
-	bne	hardboot
+	ldr		r0, kexec_hardboot
+	teq		r0, #0
+	bne		hardboot
 #endif
 
 	/* Jump to relocated kernel */
@@ -80,25 +80,25 @@ hardboot:
 	 * 12: kexec_boot_atags
 	 * 16: kexec_boot_atags_len
 	 * 20: kexec_kernel_len */
-	ldr	r0, =KEXEC_HB_PAGE_ADDR
-	str	r1, [r0, #4]
-	ldr	r1, kexec_mach_type
-	str	r1, [r0, #8]
-	ldr	r1, kexec_boot_atags
-	str	r1, [r0, #12]
-	ldr	r1, kexec_boot_atags_len
-	str	r1, [r0, #16]
-	ldr	r1, kexec_kernel_len
-	str	r1, [r0, #20]
-	ldr	r1, =KEXEC_HB_PAGE_MAGIC
-	str	r1, [r0]
+	ldr		r0, =KEXEC_HB_PAGE_ADDR
+	str		r1, [r0, #4]
+	ldr		r1, kexec_mach_type
+	str		r1, [r0, #8]
+	ldr		r1, kexec_boot_atags
+	str		r1, [r0, #12]
+	ldr		r1, kexec_boot_atags_len
+	str		r1, [r0, #16]
+	ldr		r1, kexec_kernel_len
+	str		r1, [r0, #20]
+	ldr		r1, =KEXEC_HB_PAGE_MAGIC
+	str		r1, [r0]
 
 #if defined(CONFIG_ARCH_MSM8974)
 	/* Restart using the PMIC chip, see mach-msm/restart.c */
-	ldr	r0, =MSM8974_MPM2_PSHOLD_PHYS
-	mov	r1, #0
-	str	r1, [r0, #0]
-loop:	b	loop
+		ldr		r0, =MSM8974_MPM2_PSHOLD_PHYS
+		mov		r1, #0
+		str		r1, [r0, #0]
+loop:	b		loop
 #else
 #error "No reboot method defined for hardboot."
 #endif
